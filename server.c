@@ -1,65 +1,75 @@
-#include <signal.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include<signal.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<sys/types.h>
+#include<stdlib.h>
+#include <limits.h>
+#include "libft/libft.h"
 
-static volatile sig_atomic_t g_received_bit = 0; // Global variable to track received bit
+static int	clientpid;
 
-// Signal handler for receiving bits
-void handle_signal(int signo, siginfo_t *info, void *context) {
-    (void)context;
-    static unsigned char c = 0; // Current character being constructed
-    static int bit_count = 0;   // Bit count for the current character
-    static pid_t client_pid = 0;
-
-    if (client_pid == 0) // Set the client PID on the first signal
-        client_pid = info->si_pid;
-
-    // Accumulate the bits received
-    if (signo == SIGUSR1)
-        c |= (1 << bit_count);
-    bit_count++;
-
-    // If 8 bits (1 byte) are received
-    if (bit_count == 8) {
-        if (c == '\0') { // End of message
-            write(1, "\n", 1); // Print a newline
-            kill(client_pid, SIGUSR1); // Acknowledge end of message
-            client_pid = 0; // Reset for the next message
-        } else {
-            write(1, &c, 1); // Print the character
-        }
-        c = 0;
-        bit_count = 0;
-    }
-
-    // Acknowledge receipt of the bit
-    kill(client_pid, SIGUSR1);
+void	registerpid(int *result, unsigned int *base)
+{
+	clientpid = *result;
+	*result = 0;
+	*base = 128;
 }
 
-int main(void) {
-    struct sigaction sa;
+void	reset(unsigned int *base, int *result, int *cont)
+{
+	if (*cont == 40 && *result != 0)
+	{
+		write(1, &*result, 1);
+		*base = 128;
+		*cont = 32;
+		*result = 0;
+	}
+	else if (*cont == 40 && *result == 0)
+	{
+		*cont = 0;
+		*base = 2147483648;
+	}
+}
 
-    // Print server PID
-    pid_t pid = getpid();
-    printf("Server PID: %d\n", pid);
+void	conv_txt(int bit)
+{
+	static unsigned int		base = 2147483648;
+	static int				result = 0;
+	static int				cont = 0;
 
-    // Set up the signal handler
-    sa.sa_flags = SA_SIGINFO;
-    sa.sa_sigaction = handle_signal;
-    sigemptyset(&sa.sa_mask);
-    sigaddset(&sa.sa_mask, SIGUSR1);
-    sigaddset(&sa.sa_mask, SIGUSR2);
+	if (cont < 32)
+	{
+		if (bit == SIGUSR1)
+			result = result + base;
+		base = base / 2;
+	}
+	if (cont == 31)
+		registerpid(&result, &base);
+	if (cont >= 32 && cont <= 39)
+	{
+		if (bit == SIGUSR1)
+			result = result + base;
+		base = base / 2;
+		kill(clientpid, SIGUSR1);
+	}
+	cont++;
+	if (result == 0 && cont == 40)
+		reset(&base, &result, &cont);
+	if (cont == 40)
+		reset(&base, &result, &cont);
+}
 
-    // Register signals
-    if (sigaction(SIGUSR1, &sa, NULL) == -1 || sigaction(SIGUSR2, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
+int	main(void)
+{
+	int	control;
 
-    // Loop indefinitely to wait for signals
-    while (1)
-        pause(); // Suspend until a signal is caught
-
-    return 0;
+	control = 0;
+	ft_putnbr(getpid());
+	write(1, "\n", 1);
+	signal(SIGUSR1, conv_txt);
+	signal(SIGUSR2, conv_txt);
+	pause();
+	while (1)
+		sleep(1);
+	return (0);
 }

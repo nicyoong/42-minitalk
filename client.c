@@ -1,50 +1,94 @@
 #include <signal.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <limits.h>
+#include <stdlib.h>
+#include "./libft/libft.h"
 
-// Function to send a character to the server bit by bit
-void send_char(pid_t server_pid, unsigned char c) {
-    int i = 0; // Bit index
-    while (i < 8) {
-        if (c & (1 << i)) {
-            if (kill(server_pid, SIGUSR1) == -1) {
-                perror("kill");
-                exit(EXIT_FAILURE);
-            }
-        } else {
-            if (kill(server_pid, SIGUSR2) == -1) {
-                perror("kill");
-                exit(EXIT_FAILURE);
-            }
-        }
+static int bit_count = 0;
 
-        // Wait for acknowledgment from the server
-        usleep(100);
+void	sendpid(unsigned int c, int pidserv)
+{
+	unsigned int		base;
+	unsigned int		cont;
 
-        i++; // Increment the bit index
+	cont = 0;
+	base = 2147483648;
+	if (cont < 32)
+	{
+		while (base > 0)
+		{
+			if (c >= base)
+			{
+				kill(pidserv, SIGUSR1);
+				c = c - base;
+			}
+			else
+			{
+				kill(pidserv, SIGUSR2);
+			}
+			base = base / 2;
+			usleep(300);
+		}
+	}
+	usleep(500);
+	cont++;
+}
+
+void	sendchar(unsigned char c, int pidserv)
+{
+	int		base;
+
+	base = 128;
+	while (base > 0)
+	{
+		if (c >= base)
+		{
+			kill(pidserv, SIGUSR1);
+			c = c - base;
+		}
+		else
+		{
+			kill(pidserv, SIGUSR2);
+		}
+		base = base / 2;
+		usleep(300);
+	}
+	usleep(500);
+}
+
+
+// Signal handler function
+void confirm(int sig) {
+    if (sig == SIGUSR1) {
+        // Increment the bit counter when SIGUSR1 is received
+        bit_count++;
+        
+        // Print the number of received bits
+        dprintf(1, "Received bit %d\n", bit_count);  // Print to standard output
     }
 }
 
-// Function to send a string to the server
-void send_string(pid_t server_pid, const char *str) {
-    while (*str) {
-        send_char(server_pid, *str);
-        str++;
-    }
-    send_char(server_pid, '\0'); // Null-terminate the string
-}
+int	main(int argc, char **argv)
+{
+	int	pidserv;
+	int	i;
 
-int main(int argc, char **argv) {
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <server_pid> <message>\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-
-    pid_t server_pid = atoi(argv[1]);
-    const char *message = argv[2];
-
-    send_string(server_pid, message);
-
-    return 0;
+	i = 0;
+	if (argc != 3)
+	{
+		printf("Usage: ./client [PID] [message]\n");
+		return (-1);
+	}
+	signal(SIGUSR1, confirm);
+	pidserv = ft_atoi(argv[1]);
+	sendpid(getpid(), pidserv);
+	while (argv[2][i])
+	{
+		sendchar(argv[2][i], pidserv);
+		i++;
+	}
+	sendchar('\0', pidserv);
+	return (0);
 }
