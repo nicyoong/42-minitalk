@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nyoong <nyoong@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/12/03 11:16:52 by nyoong            #+#    #+#             */
+/*   Updated: 2024/12/03 11:18:16 by nyoong           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include<signal.h>
 #include<unistd.h>
 #include<stdio.h>
@@ -6,11 +18,11 @@
 #include <limits.h>
 #include "libft/libft.h"
 
-static int	clientpid;
+static int	g_clientpid;
 
 void	registerpid(int *result, unsigned int *base)
 {
-	clientpid = *result;
+	g_clientpid = *result;
 	*result = 0;
 	*base = 128;
 }
@@ -64,8 +76,6 @@ int	main(void)
 	int	control;
 
 	control = 0;
-	ft_putnbr(getpid());
-	write(1, "\n", 1);
 	signal(SIGUSR1, conv_txt);
 	signal(SIGUSR2, conv_txt);
 	pause();

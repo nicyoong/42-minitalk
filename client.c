@@ -1,17 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   client.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nyoong <nyoong@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/12/03 11:16:59 by nyoong            #+#    #+#             */
+/*   Updated: 2024/12/03 11:52:07 by nyoong           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <limits.h>
 #include <stdlib.h>
-#include "./libft/libft.h"
+#include "libft/libft.h"
+#include "libft/ft_printf.h"
 
-static int bit_count = 0;
+static int	g_bit_count;
 
 void	sendpid(unsigned int c, int pidserv)
 {
-	unsigned int		base;
-	unsigned int		cont;
+	unsigned int	base;
+	unsigned int	cont;
 
 	cont = 0;
 	base = 2147483648;
@@ -53,21 +66,15 @@ void	sendchar(unsigned char c, int pidserv)
 			kill(pidserv, SIGUSR2);
 		}
 		base = base / 2;
-		usleep(300);
+		usleep(1000);
 	}
-	usleep(500);
+	usleep(2000);
 }
 
-
-// Signal handler function
-void confirm(int sig) {
-    if (sig == SIGUSR1) {
-        // Increment the bit counter when SIGUSR1 is received
-        bit_count++;
-        
-        // Print the number of received bits
-        dprintf(1, "Received bit %d\n", bit_count);  // Print to standard output
-    }
+void	confirm(int sig)
+{
+	g_bit_count++;
+	ft_printf("Received bit %d\n", g_bit_count);
 }
 
 int	main(int argc, char **argv)
@@ -76,9 +83,10 @@ int	main(int argc, char **argv)
 	int	i;
 
 	i = 0;
+	g_bit_count = 0;
 	if (argc != 3)
 	{
-		printf("Usage: ./client [PID] [message]\n");
+		ft_printf("Usage: ./client [PID] [message]\n");
 		return (-1);
 	}
 	signal(SIGUSR1, confirm);
