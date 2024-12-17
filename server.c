@@ -6,7 +6,7 @@
 /*   By: nyoong <nyoong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 11:16:52 by nyoong            #+#    #+#             */
-/*   Updated: 2024/12/03 11:18:16 by nyoong           ###   ########.fr       */
+/*   Updated: 2024/12/17 21:30:14 by nyoong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ void	conv_txt(int bit)
 		if (bit == SIGUSR1)
 			result = result + base;
 		base = base / 2;
-		kill(clientpid, SIGUSR1);
+		kill(g_clientpid, SIGUSR1);
 	}
 	cont++;
 	if (result == 0 && cont == 40)
@@ -75,6 +75,7 @@ int	main(void)
 {
 	int	control;
 
+	ft_printf("%d\n", getpid());
 	control = 0;
 	signal(SIGUSR1, conv_txt);
 	signal(SIGUSR2, conv_txt);

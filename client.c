@@ -6,7 +6,7 @@
 /*   By: nyoong <nyoong@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 11:16:59 by nyoong            #+#    #+#             */
-/*   Updated: 2024/12/03 11:52:07 by nyoong           ###   ########.fr       */
+/*   Updated: 2024/12/17 21:30:15 by nyoong           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void	sendchar(unsigned char c, int pidserv)
 	usleep(2000);
 }
 
-void	confirm(int sig)
+void	confirm()
 {
 	g_bit_count++;
 	ft_printf("Received bit %d\n", g_bit_count);

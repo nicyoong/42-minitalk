@@ -36,7 +36,12 @@ SRCS = \
     ft_putchar_fd.c \
     ft_putstr_fd.c \
     ft_putendl_fd.c \
-    ft_putnbr_fd.c
+    ft_putnbr_fd.c \
+    get_next_line.c \
+    ft_printf.c \
+    handler.c \
+    handler2.c \
+    utils.c
 
 BONUS_SRCS = \
     ft_lstnew.c \
