@@ -66,9 +66,10 @@ void	sendchar(unsigned char c, int pidserv)
 			kill(pidserv, SIGUSR2);
 		}
 		base = base / 2;
-		usleep(1000);
+		signal(SIGUSR1, confirm);
+		usleep(6000);
 	}
-	usleep(2000);
+	usleep(4000);
 }
 
 void	confirm()
@@ -89,7 +90,6 @@ int	main(int argc, char **argv)
 		ft_printf("Usage: ./client [PID] [message]\n");
 		return (-1);
 	}
-	signal(SIGUSR1, confirm);
 	pidserv = ft_atoi(argv[1]);
 	sendpid(getpid(), pidserv);
 	while (argv[2][i])
